@@ -194,15 +194,6 @@ export function Login() {
                     </Button>
                 </form>
 
-                <div className="login-footer">
-                    <p>
-                        Pas encore de compte?{' '}
-                        <Link to="/register" className="signup-link">
-                            Créer un compte
-                        </Link>
-                    </p>
-                </div>
-
                 <div className="visitor-explore">
                     <div className="divider">
                         <span>ou</span>

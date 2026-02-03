@@ -19,8 +19,8 @@ export function BlockedUsers() {
         setIsLoading(true);
         setError(null);
         try {
-            const allUsers = await adminService.getUsers();
-            setUsers(allUsers);
+            const response = await adminService.getUsers();
+            setUsers(response.data);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Erreur lors du chargement des utilisateurs');
         } finally {
@@ -64,11 +64,8 @@ export function BlockedUsers() {
         try {
             const result = await adminService.unblockUser(user.id);
             if (result.success) {
-                const details = result.details?.tentatives_reinitialisees
-                    ? ' Les tentatives de connexion ont été réinitialisées.'
-                    : '';
                 setSuccessMessage(
-                    result.message || `L'utilisateur ${user.display_name} a été débloqué.${details}`
+                    result.message || `L'utilisateur ${user.display_name} a été débloqué.`
                 );
                 await fetchUsers();
             } else {

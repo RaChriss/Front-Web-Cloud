@@ -1,12 +1,12 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import {
   Login,
-  Register,
   Dashboard,
   Profile,
   MyReports,
   MyReportDetail,
   BlockedUsers,
+  Users,
   Sync,
   Reports,
   ReportDetail,
@@ -94,14 +94,6 @@ function AppRoutes() {
         element={
           <PublicOnlyRoute>
             <Login />
-          </PublicOnlyRoute>
-        }
-      />
-      <Route
-        path={ROUTES.REGISTER}
-        element={
-          <PublicOnlyRoute>
-            <Register />
           </PublicOnlyRoute>
         }
       />
@@ -199,6 +191,16 @@ function AppRoutes() {
           <ManagerRoute>
             <MainLayout>
               <BlockedUsers />
+            </MainLayout>
+          </ManagerRoute>
+        }
+      />
+      <Route
+        path={ROUTES.ADMIN.USERS}
+        element={
+          <ManagerRoute>
+            <MainLayout>
+              <Users />
             </MainLayout>
           </ManagerRoute>
         }

@@ -1,6 +1,5 @@
 // Pages d'authentification
 export { Login } from './auth/Login';
-export { Register } from './auth/Register';
 
 // Pages publiques
 export { Dashboard } from './public/Dashboard';
@@ -15,4 +14,5 @@ export { Reports } from './admin/Reports';
 export { ReportDetail } from './admin/ReportDetail';
 export { Sync } from './admin/Sync';
 export { BlockedUsers } from './admin/BlockedUsers';
+export { Users } from './admin/Users';
 export { Entreprises } from './admin/Entreprises';
