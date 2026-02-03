@@ -1,0 +1,42 @@
+services:
+  # Extraction de la zone Antananarivo depuis le fichier OSM complet
+  osmium-extract:
+    image: stefda/osmium-tool
+    container_name: osmium-extract
+    volumes:
+      - ./map-data:/data
+    command: >
+      osmium extract
+      --bbox 47.4,-19.0,47.7,-18.75
+      --output /data/antananarivo.osm.pbf
+      --overwrite
+      /data/region.osm.pbf
+    profiles:
+      - extract
+
+  # Service pour générer les tuiles à partir du fichier OSM extrait
+  tilemaker:
+    image: stadtnavi/tilemaker:latest
+    container_name: tilemaker
+    volumes:
+      - ./map-data:/data
+    command: >
+      tilemaker --input /data/antananarivo.osm.pbf 
+      --output /data/antananarivo.mbtiles
+      --process /resources/process-openmaptiles.lua
+      --config /resources/config-openmaptiles.json
+      --bbox 47.4,-19.0,47.7,-18.75
+      --skip-integrity
+    profiles:
+      - build
+
+  # Serveur de tuiles
+  tileserver:
+    image: maptiler/tileserver-gl:latest
+    container_name: tileserver-antananarivo
+    ports:
+      - "9080:8080"
+    volumes:
+      - ./map-data:/data
+    restart: unless-stopped
+

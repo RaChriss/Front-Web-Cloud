@@ -1,0 +1,19 @@
+{
+    "options": {
+        "paths": {
+            "root": "/data",
+            "mbtiles": "",
+            "fonts": ""
+        }
+    },
+    "styles": {
+        "basic": {
+            "style": "basic-style.json"
+        }
+    },
+    "data": {
+        "antananarivo": {
+            "mbtiles": "antananarivo.mbtiles"
+        }
+    }
+}

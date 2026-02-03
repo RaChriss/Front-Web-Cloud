@@ -1,0 +1,312 @@
+{
+    "version": 8,
+    "name": "SignalRoute Basic",
+    "sources": {
+        "antananarivo": {
+            "type": "vector",
+            "url": "mbtiles://{antananarivo}"
+        }
+    },
+    "glyphs": "{fontstack}/{range}.pbf",
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "#f8f4f0"
+            }
+        },
+        {
+            "id": "landcover",
+            "type": "fill",
+            "source": "antananarivo",
+            "source-layer": "landcover",
+            "paint": {
+                "fill-color": [
+                    "match",
+                    [
+                        "get",
+                        "class"
+                    ],
+                    "grass",
+                    "#d8e8c8",
+                    "wood",
+                    "#aed1a0",
+                    "farmland",
+                    "#eef0d5",
+                    "#e0dfdf"
+                ],
+                "fill-opacity": 0.5
+            }
+        },
+        {
+            "id": "landuse",
+            "type": "fill",
+            "source": "antananarivo",
+            "source-layer": "landuse",
+            "paint": {
+                "fill-color": [
+                    "match",
+                    [
+                        "get",
+                        "class"
+                    ],
+                    "residential",
+                    "#f0e6d2",
+                    "commercial",
+                    "#f7d9d9",
+                    "industrial",
+                    "#e6dfd9",
+                    "cemetery",
+                    "#d4e0d4",
+                    "hospital",
+                    "#ffd8d8",
+                    "school",
+                    "#f0e6d2",
+                    "#f0f0f0"
+                ],
+                "fill-opacity": 0.6
+            }
+        },
+        {
+            "id": "park",
+            "type": "fill",
+            "source": "antananarivo",
+            "source-layer": "park",
+            "paint": {
+                "fill-color": "#cde2bd",
+                "fill-opacity": 0.7
+            }
+        },
+        {
+            "id": "water",
+            "type": "fill",
+            "source": "antananarivo",
+            "source-layer": "water",
+            "paint": {
+                "fill-color": "#aad3df"
+            }
+        },
+        {
+            "id": "waterway",
+            "type": "line",
+            "source": "antananarivo",
+            "source-layer": "waterway",
+            "paint": {
+                "line-color": "#aad3df",
+                "line-width": [
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    8,
+                    0.5,
+                    14,
+                    3
+                ]
+            }
+        },
+        {
+            "id": "building",
+            "type": "fill",
+            "source": "antananarivo",
+            "source-layer": "building",
+            "minzoom": 13,
+            "paint": {
+                "fill-color": "#d9d0c9",
+                "fill-outline-color": "#b9a89c"
+            }
+        },
+        {
+            "id": "road-minor",
+            "type": "line",
+            "source": "antananarivo",
+            "source-layer": "transportation",
+            "filter": [
+                "in",
+                "class",
+                "minor",
+                "service",
+                "path"
+            ],
+            "paint": {
+                "line-color": "#ffffff",
+                "line-width": [
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    12,
+                    0.5,
+                    16,
+                    4
+                ]
+            }
+        },
+        {
+            "id": "road-secondary",
+            "type": "line",
+            "source": "antananarivo",
+            "source-layer": "transportation",
+            "filter": [
+                "in",
+                "class",
+                "secondary",
+                "tertiary"
+            ],
+            "paint": {
+                "line-color": "#fefefe",
+                "line-width": [
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    10,
+                    1,
+                    16,
+                    8
+                ]
+            }
+        },
+        {
+            "id": "road-primary",
+            "type": "line",
+            "source": "antananarivo",
+            "source-layer": "transportation",
+            "filter": [
+                "==",
+                "class",
+                "primary"
+            ],
+            "paint": {
+                "line-color": "#fcd6a4",
+                "line-width": [
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    8,
+                    1,
+                    16,
+                    12
+                ]
+            }
+        },
+        {
+            "id": "road-trunk",
+            "type": "line",
+            "source": "antananarivo",
+            "source-layer": "transportation",
+            "filter": [
+                "==",
+                "class",
+                "trunk"
+            ],
+            "paint": {
+                "line-color": "#f9b29c",
+                "line-width": [
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    6,
+                    1,
+                    16,
+                    14
+                ]
+            }
+        },
+        {
+            "id": "road-motorway",
+            "type": "line",
+            "source": "antananarivo",
+            "source-layer": "transportation",
+            "filter": [
+                "==",
+                "class",
+                "motorway"
+            ],
+            "paint": {
+                "line-color": "#e892a2",
+                "line-width": [
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    5,
+                    1,
+                    16,
+                    16
+                ]
+            }
+        },
+        {
+            "id": "road-label",
+            "type": "symbol",
+            "source": "antananarivo",
+            "source-layer": "transportation_name",
+            "minzoom": 12,
+            "layout": {
+                "text-field": "{name:latin}",
+                "text-font": [
+                    "KlokanTech Noto Sans Regular"
+                ],
+                "text-size": 11,
+                "symbol-placement": "line"
+            },
+            "paint": {
+                "text-color": "#333333",
+                "text-halo-color": "#ffffff",
+                "text-halo-width": 1
+            }
+        },
+        {
+            "id": "place-label",
+            "type": "symbol",
+            "source": "antananarivo",
+            "source-layer": "place",
+            "layout": {
+                "text-field": "{name:latin}",
+                "text-font": [
+                    "KlokanTech Noto Sans Bold"
+                ],
+                "text-size": [
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    8,
+                    12,
+                    14,
+                    16
+                ]
+            },
+            "paint": {
+                "text-color": "#333333",
+                "text-halo-color": "#ffffff",
+                "text-halo-width": 1.5
+            }
+        }
+    ]
+}
