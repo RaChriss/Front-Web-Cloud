@@ -1,5 +1,5 @@
 import { apiRequest } from './api';
-import type { AdminUser, User } from '../types/auth.types';
+import type { AdminUser } from '../types/auth.types';
 import type {
     SyncStatus,
     SyncConflict,
@@ -9,11 +9,44 @@ import type {
     AutoSyncConfig,
 } from '../types/report.types';
 
-// Réponse de la liste des utilisateurs
-export interface UsersResponse {
+// Réponse de la liste des utilisateurs avec pagination
+export interface UsersListResponse {
     success: boolean;
-    count: number;
-    users: AdminUser[];
+    data: AdminUser[];
+    pagination: {
+        total: number;
+        page: number;
+        limit: number;
+        pages: number;
+    };
+}
+
+// Réponse de recherche rapide
+export interface UsersSearchResponse {
+    success: boolean;
+    results: AdminUser[];
+}
+
+// Réponse pour un utilisateur unique
+export interface UserResponse {
+    success: boolean;
+    data: AdminUser;
+    message?: string;
+}
+
+// Paramètres de création/modification d'utilisateur
+export interface CreateUserDTO {
+    email: string;
+    password: string;
+    display_name: string;
+    type_user: 1 | 2 | 3;
+}
+
+export interface UpdateUserDTO {
+    email?: string;
+    password?: string;
+    display_name?: string;
+    type_user?: 1 | 2 | 3;
 }
 
 // Réponse pour le blocage/déblocage
@@ -21,10 +54,18 @@ export interface BlockResponse {
     success: boolean;
     message?: string;
     error?: string;
-    details?: {
-        tentatives_reinitialisees?: boolean;
+}
+
+// Statistiques des utilisateurs
+export interface UserStatsResponse {
+    success: boolean;
+    data: {
+        total_users: number;
+        blocked_users: number;
+        visitors: number;
+        regular_users: number;
+        managers: number;
     };
-    user?: User;
 }
 
 export interface AdminParameters {
@@ -34,48 +75,138 @@ export interface AdminParameters {
 }
 
 export const adminService = {
+    // ============================================
+    // GESTION DES UTILISATEURS - ENDPOINTS /api/users
+    // ============================================
+
     /**
-     * Liste tous les utilisateurs
-     * GET /api/admin/users
+     * Lister tous les utilisateurs avec pagination, filtre et recherche
+     * GET /api/users
      */
-    async getUsers(): Promise<AdminUser[]> {
-        const response = await apiRequest<UsersResponse>('/admin/users', {
+    async getUsers(params?: {
+        page?: number;
+        limit?: number;
+        search?: string;
+        type_user?: number;
+        est_bloque?: boolean;
+        sort_by?: 'date_creation' | 'email' | 'display_name';
+        order?: 'ASC' | 'DESC';
+    }): Promise<UsersListResponse> {
+        const queryParams = new URLSearchParams();
+        if (params?.page) queryParams.append('page', params.page.toString());
+        if (params?.limit) queryParams.append('limit', params.limit.toString());
+        if (params?.search) queryParams.append('search', params.search);
+        if (params?.type_user !== undefined) queryParams.append('type_user', params.type_user.toString());
+        if (params?.est_bloque !== undefined) queryParams.append('est_bloque', params.est_bloque.toString());
+        if (params?.sort_by) queryParams.append('sort_by', params.sort_by);
+        if (params?.order) queryParams.append('order', params.order);
+
+        const queryString = queryParams.toString();
+        const endpoint = `/users${queryString ? `?${queryString}` : ''}`;
+
+        return apiRequest<UsersListResponse>(endpoint, {
             method: 'GET',
         });
-        return response.success ? response.users : [];
     },
 
     /**
-     * Liste les utilisateurs bloqués uniquement
-     * GET /api/admin/users/blocked
+     * Recherche rapide d'utilisateurs
+     * GET /api/users/search
      */
-    async getBlockedUsers(): Promise<AdminUser[]> {
-        const response = await apiRequest<UsersResponse>('/admin/users/blocked', {
+    async searchUsers(query: string, limit: number = 5): Promise<UsersSearchResponse> {
+        return apiRequest<UsersSearchResponse>(
+            `/users/search?q=${encodeURIComponent(query)}&limit=${limit}`,
+            {
+                method: 'GET',
+            },
+        );
+    },
+
+    /**
+     * Récupérer un utilisateur par ID
+     * GET /api/users/:id
+     */
+    async getUserById(userId: number): Promise<UserResponse> {
+        return apiRequest<UserResponse>(`/users/${userId}`, {
             method: 'GET',
         });
-        return response.success ? response.users : [];
+    },
+
+    /**
+     * Créer un nouvel utilisateur
+     * POST /api/users
+     */
+    async createUser(userData: CreateUserDTO): Promise<UserResponse> {
+        return apiRequest<UserResponse>('/users', {
+            method: 'POST',
+            body: userData,
+        });
+    },
+
+    /**
+     * Modifier un utilisateur
+     * PUT /api/users/:id
+     */
+    async updateUser(userId: number, userData: UpdateUserDTO): Promise<UserResponse> {
+        return apiRequest<UserResponse>(`/users/${userId}`, {
+            method: 'PUT',
+            body: userData,
+        });
+    },
+
+    /**
+     * Supprimer un utilisateur
+     * DELETE /api/users/:id
+     */
+    async deleteUser(userId: number): Promise<{ success: boolean; message: string }> {
+        return apiRequest<{ success: boolean; message: string }>(`/users/${userId}`, {
+            method: 'DELETE',
+        });
     },
 
     /**
      * Bloquer un utilisateur
-     * POST /api/admin/users/:id/block
-     * Note: Les managers (type_user = 3) ne peuvent pas être bloqués
+     * POST /api/users/:id/block
      */
     async blockUser(userId: number): Promise<BlockResponse> {
-        return apiRequest<BlockResponse>(`/admin/users/${userId}/block`, {
+        return apiRequest<BlockResponse>(`/users/${userId}/block`, {
             method: 'POST',
         });
     },
 
     /**
-     * Débloquer un utilisateur et réinitialiser ses tentatives de connexion
-     * POST /api/admin/users/:id/unblock
+     * Débloquer un utilisateur
+     * POST /api/users/:id/unblock
      */
     async unblockUser(userId: number): Promise<BlockResponse> {
-        return apiRequest<BlockResponse>(`/admin/users/${userId}/unblock`, {
+        return apiRequest<BlockResponse>(`/users/${userId}/unblock`, {
             method: 'POST',
         });
     },
+
+    /**
+     * Obtenir les statistiques des utilisateurs
+     * GET /api/users/stats/summary
+     */
+    async getUserStats(): Promise<UserStatsResponse> {
+        return apiRequest<UserStatsResponse>('/users/stats/summary', {
+            method: 'GET',
+        });
+    },
+
+    /**
+     * Liste les utilisateurs bloqués (pour compatibilité)
+     */
+    async getBlockedUsers(params?: { page?: number; limit?: number }): Promise<UsersListResponse> {
+        return this.getUsers({
+            ...params,
+            est_bloque: true,
+        });
+    },
+
+    // ============================================
+    // PARAMÈTRES DE CONFIGURATION
+    // ============================================
 
     // Paramètres de configuration
     async getParameters(): Promise<AdminParameters[]> {

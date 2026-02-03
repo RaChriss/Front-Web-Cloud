@@ -4,7 +4,6 @@ export const ROUTES = {
     // Routes publiques
     HOME: '/',
     LOGIN: '/login',
-    REGISTER: '/register',
 
     // Routes Visiteur & Utilisateur (carte publique)
     DASHBOARD: '/dashboard',
@@ -34,7 +33,6 @@ export const ROUTES = {
 export const API_ENDPOINTS = {
     AUTH: {
         LOGIN: '/auth/login',
-        REGISTER: '/auth/register',
         LOGOUT: '/auth/logout',
         REFRESH: '/auth/refresh',
     },
