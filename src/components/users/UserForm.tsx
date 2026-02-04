@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import type { AdminUser } from '../../../types/auth.types';
-import type { CreateUserDTO, UpdateUserDTO } from '../../../services/adminService';
+import type { AdminUser } from '../../types/auth.types';
+import type { CreateUserDTO, UpdateUserDTO } from '../../services/adminService';
 
 interface UserFormProps {
     user?: AdminUser | null;

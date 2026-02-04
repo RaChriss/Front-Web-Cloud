@@ -185,6 +185,16 @@ export const adminService = {
     },
 
     /**
+     * Envoyer les identifiants de connexion par email
+     * POST /api/users/:id/send-credentials
+     */
+    async sendUserCredentials(userId: number): Promise<{ success: boolean; message: string }> {
+        return apiRequest<{ success: boolean; message: string }>(`/users/${userId}/send-credentials`, {
+            method: 'POST',
+        });
+    },
+
+    /**
      * Obtenir les statistiques des utilisateurs
      * GET /api/users/stats/summary
      */
