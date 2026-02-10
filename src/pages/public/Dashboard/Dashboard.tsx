@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MapView } from '../../../components/Map';
 import type { NewReportLocation } from '../../../components/Map';
 import { ReportForm } from '../../../components/Report';
@@ -7,10 +8,12 @@ import { Button } from '../../../components/ui';
 import { useAuth } from '../../../contexts';
 import { reportService } from '../../../services/reportService';
 import type { Report, ReportSummary, ReportFormData } from '../../../types/report.types';
+import { ROUTES } from '../../../constants';
 import '../../../assets/styles/pages/Dashboard.css';
 
 export function Dashboard() {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [allReports, setAllReports] = useState<Report[]>([]);
     const [myReports, setMyReports] = useState<Report[]>([]);
     const [summary, setSummary] = useState<ReportSummary>({
@@ -96,6 +99,23 @@ export function Dashboard() {
         setPendingLocation(location);
         setShowReportForm(true);
     }, []);
+
+    // Handler pour le clic sur un signalement dans la carte
+    const handleReportClick = useCallback((report: Report) => {
+        // Naviguer vers la page de détail du signalement
+        // Les utilisateurs connectés vont vers la page admin, les autres vers le dashboard avec modal
+        if (user && user.type_user === 3) {
+            // Manager → page admin de détail
+            navigate(ROUTES.ADMIN.REPORT_DETAIL.replace(':id', report.id.toString()));
+        } else if (user && user.type_user === 2) {
+            // Utilisateur connecté → page utilisateur
+            navigate(`/user/signalement/${report.id}`);
+        } else {
+            // Non connecté → modal ou simplement les infos dans le popup suffisent
+            // Pour l'instant, ne rien faire ou afficher une alerte
+            console.log('Détails du signalement:', report);
+        }
+    }, [navigate, user]);
 
     const handleCreateReport = async (data: ReportFormData) => {
         setIsSubmitting(true);
@@ -238,6 +258,7 @@ export function Dashboard() {
                             isCreationMode={isCreationMode}
                             onLocationSelect={handleLocationSelect}
                             pendingLocation={pendingLocation}
+                            onReportClick={handleReportClick}
                         />
                     </div>
                 </section>

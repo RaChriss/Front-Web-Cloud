@@ -234,6 +234,184 @@
     margin-top: var(--spacing-xs);
 }
 
+/* Enhanced Popup Header */
+.popup-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+/* Niveau Badge */
+.popup-niveau {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+}
+
+.popup-niveau.niveau-low {
+    background-color: #ecfdf5;
+    color: #059669;
+}
+
+.popup-niveau.niveau-medium {
+    background-color: #fffbeb;
+    color: #d97706;
+}
+
+.popup-niveau.niveau-high {
+    background-color: #fef3c7;
+    color: #b45309;
+}
+
+.popup-niveau.niveau-critical {
+    background-color: #fef2f2;
+    color: #dc2626;
+}
+
+/* Budget highlight */
+.budget-value {
+    color: var(--color-primary, #0d7377) !important;
+    font-weight: 600 !important;
+}
+
+/* Popup Actions */
+.popup-actions {
+    margin-top: var(--spacing-md);
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid var(--color-gray-200);
+}
+
+.popup-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--gradient-primary, linear-gradient(135deg, #0d7377 0%, #14a085 100%));
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.popup-action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(13, 115, 119, 0.3);
+}
+
+.popup-action-btn.photos-btn {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.popup-action-btn.photos-btn:hover {
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.popup-action-btn.details-btn {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+}
+
+.popup-action-btn.details-btn:hover {
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+/* Popup Loading State */
+.popup-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-lg);
+    color: var(--color-gray-500);
+}
+
+.popup-spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid var(--color-gray-200, #e5e7eb);
+    border-top-color: var(--color-primary, #0d7377);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: var(--spacing-sm);
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Popup Progress Bar */
+.popup-progress {
+    margin: var(--spacing-sm) 0;
+    padding: var(--spacing-sm);
+    background: var(--color-gray-50, #f9fafb);
+    border-radius: var(--radius-md);
+}
+
+.popup-progress .progress-bar-container {
+    height: 8px;
+    background: var(--color-gray-200, #e5e7eb);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin-bottom: var(--spacing-xs);
+}
+
+.popup-progress .progress-bar {
+    height: 100%;
+    background: var(--gradient-primary, linear-gradient(to right, #0d7377, #14a085));
+    border-radius: var(--radius-full);
+    transition: width 0.3s ease;
+}
+
+.popup-progress .progress-label {
+    font-size: var(--font-size-xs);
+    color: var(--color-gray-600);
+    text-align: center;
+    display: block;
+}
+
+/* Entreprise Detail */
+.entreprise-detail {
+    flex-direction: column;
+    align-items: flex-start !important;
+}
+
+.entreprise-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.entreprise-contact {
+    font-size: var(--font-size-xs);
+    color: var(--color-primary, #0d7377);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.entreprise-contact:hover {
+    text-decoration: underline;
+}
+
+/* Wider popup for more content */
+.report-popup .leaflet-popup-content {
+    min-width: 280px;
+    max-width: 320px;
+}
+
 /* Mobile adjustments */
 @media (max-width: 640px) {
     .creation-mode-banner {

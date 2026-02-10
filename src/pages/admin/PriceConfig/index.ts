@@ -1,0 +1,1 @@
+export { PriceConfig } from './PriceConfig';

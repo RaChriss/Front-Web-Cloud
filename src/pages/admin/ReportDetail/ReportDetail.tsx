@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Button, Input } from '../../../components/ui';
+import { PhotoGallery } from '../../../components/Report';
 import { reportService } from '../../../services/reportService';
 import type { Report, ReportStatus, EntrepriseConfig, GestionCompleteData, ManagerReportUpdateData, StatusUpdateData, HistoriqueEntry } from '../../../types/report.types';
 import { STATUS_REVERSE_MAP } from '../../../types/report.types';
@@ -29,6 +30,7 @@ export function ReportDetail() {
     // Form state pour le statut
     const [selectedStatus, setSelectedStatus] = useState<ReportStatus>('new');
     const [statusComment, setStatusComment] = useState('');
+    const [selectedNiveau, setSelectedNiveau] = useState<number | null>(null);
 
     // Form state pour la gestion complète (réparation)
     const [gestionData, setGestionData] = useState<GestionCompleteData>({
@@ -63,6 +65,7 @@ export function ReportDetail() {
                 const data = await reportService.getReport(id);
                 setReport(data);
                 setSelectedStatus(data.clientStatus);
+                setSelectedNiveau(data.niveau ?? null);
 
                 // Initialiser les données d'édition
                 setEditData({
@@ -168,10 +171,14 @@ export function ReportDetail() {
         setSuccessMessage(null);
 
         try {
-            const statusData: StatusUpdateData = {
+            const statusData: StatusUpdateData & { niveau?: number } = {
                 id_status: STATUS_REVERSE_MAP[selectedStatus],
                 commentaire: statusComment || undefined,
             };
+            // Ajouter le niveau si défini
+            if (selectedNiveau !== null) {
+                statusData.niveau = selectedNiveau;
+            }
             await reportService.updateStatus(id, statusData);
             setSuccessMessage('Statut mis à jour avec succès');
             setStatusComment('');
@@ -179,6 +186,7 @@ export function ReportDetail() {
             // Recharger les données
             const data = await reportService.getReport(id);
             setReport(data);
+            setSelectedNiveau(data.niveau ?? null);
             const historiqueData = await reportService.getHistorique(id);
             setHistorique(historiqueData);
 
@@ -496,6 +504,42 @@ export function ReportDetail() {
                         </select>
                     </div>
 
+                    {/* Niveau de dégradation */}
+                    <div className="form-group">
+                        <label htmlFor="niveau">Niveau de dégradation (1-10)</label>
+                        <div className="niveau-slider-container">
+                            <input
+                                type="range"
+                                id="niveau"
+                                min="1"
+                                max="10"
+                                value={selectedNiveau || 5}
+                                onChange={(e) => setSelectedNiveau(Number(e.target.value))}
+                                className="niveau-slider"
+                            />
+                            <div className="niveau-value-display">
+                                <span
+                                    className="niveau-badge-large"
+                                    style={{
+                                        backgroundColor: selectedNiveau
+                                            ? `hsl(${(10 - selectedNiveau) * 12}, 70%, 50%)`
+                                            : '#9ca3af'
+                                    }}
+                                >
+                                    {selectedNiveau || '?'}
+                                </span>
+                                <span className="niveau-description">
+                                    {selectedNiveau
+                                        ? selectedNiveau <= 3 ? 'Mineur'
+                                            : selectedNiveau <= 6 ? 'Modéré'
+                                                : 'Critique'
+                                        : 'Non défini'}
+                                </span>
+                            </div>
+                        </div>
+                        <p className="form-hint">Le niveau impacte le calcul du budget des réparations</p>
+                    </div>
+
                     <div className="form-group">
                         <label htmlFor="statusComment">Commentaire (optionnel)</label>
                         <textarea
@@ -515,104 +559,6 @@ export function ReportDetail() {
                         isLoading={isSaving}
                     >
                         Mettre à jour le statut
-                    </Button>
-                </div>
-
-                {/* Formulaire de gestion complète (réparation) */}
-                <div className="detail-card form-card gestion-card">
-                    <h2>Gestion de la réparation</h2>
-                    <p className="card-subtitle">Gérer l'entreprise, le budget, la surface et les dates</p>
-
-                    <div className="form-group">
-                        <label htmlFor="id_entreprise">Entreprise assignée</label>
-                        <select
-                            id="id_entreprise"
-                            name="id_entreprise"
-                            value={gestionData.id_entreprise || ''}
-                            onChange={handleGestionChange}
-                            className="form-select"
-                        >
-                            <option value="">-- Sélectionner une entreprise --</option>
-                            {entreprises.map((e) => (
-                                <option key={e.id} value={e.id}>
-                                    {e.nom} {e.telephone ? `(${e.telephone})` : ''}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className="form-row">
-                        <div className="form-group">
-                            <Input
-                                id="surface_m2"
-                                name="surface_m2"
-                                type="number"
-                                label="Surface (m²)"
-                                value={gestionData.surface_m2?.toString() || ''}
-                                onChange={handleGestionChange}
-                                placeholder="Ex: 25.5"
-                            />
-                        </div>
-                        <div className="form-group">
-                            <Input
-                                id="budget"
-                                name="budget"
-                                type="number"
-                                label="Budget (Ariary)"
-                                value={gestionData.budget?.toString() || ''}
-                                onChange={handleGestionChange}
-                                placeholder="Ex: 1500000"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="form-row">
-                        <div className="form-group">
-                            <Input
-                                id="date_debut"
-                                name="date_debut"
-                                type="date"
-                                label="Date de début"
-                                value={gestionData.date_debut || ''}
-                                onChange={handleGestionChange}
-                            />
-                        </div>
-                        <div className="form-group">
-                            <Input
-                                id="date_fin_prevue"
-                                name="date_fin_prevue"
-                                type="date"
-                                label="Date de fin prévue"
-                                value={gestionData.date_fin_prevue || ''}
-                                onChange={handleGestionChange}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="commentaire">Commentaire</label>
-                        <textarea
-                            id="commentaire"
-                            name="commentaire"
-                            value={gestionData.commentaire || ''}
-                            onChange={handleGestionChange}
-                            className="form-textarea"
-                            rows={3}
-                            placeholder="Commentaire sur la réparation..."
-                        />
-                    </div>
-
-                    <Button
-                        variant="primary"
-                        onClick={handleSaveGestionComplete}
-                        isLoading={isSaving}
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                            <polyline points="17 21 17 13 7 13 7 21" />
-                            <polyline points="7 3 7 8 15 8" />
-                        </svg>
-                        Enregistrer la gestion
                     </Button>
                 </div>
 
@@ -642,6 +588,17 @@ export function ReportDetail() {
                                 </div>
                             ))}
                         </div>
+                    </div>
+                )}
+
+                {/* Galerie photos */}
+                {report?.id && (
+                    <div className="detail-card photos-card">
+                        <h2>📷 Photos du signalement</h2>
+                        <PhotoGallery
+                            signalementId={report.id}
+                            editable={true}
+                        />
                     </div>
                 )}
             </div>

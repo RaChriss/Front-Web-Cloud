@@ -42,6 +42,7 @@ export interface EntrepriseConfig {
 export interface Reparation {
     id: number;
     id_signalement: number;
+    niveau?: number; // Niveau de gravité 1-10 (vient du signalement)
     surface_m2: number;
     budget: number;
     id_entreprise: number;
@@ -50,6 +51,8 @@ export interface Reparation {
     date_fin_prevue?: string;
     date_fin_reelle?: string;
     commentaire?: string;
+    status?: string; // 'nouveau' | 'en_cours' | 'termine'
+    avancement_pct?: number;
     created_at: string;
     updated_at: string;
 }
@@ -76,6 +79,41 @@ export interface HistoriqueEntry {
     date_modification: string;
 }
 
+// Données pour le popup d'un signalement (endpoint optimisé)
+export interface PopupReparation {
+    id: number;
+    surface_m2: number;
+    budget: number;
+    niveau: number;
+    avancement_pct: number;
+    date_creation: string;
+    date_passage_en_cours: string | null;
+    date_termine: string | null;
+}
+
+export interface PopupEntreprise {
+    id: number;
+    nom: string;
+    telephone?: string;
+    email?: string;
+}
+
+export interface PopupPhotos {
+    count: number;
+    url: string;
+}
+
+export interface PopupData {
+    id: number;
+    description: string;
+    date_signalement: string;
+    location: Location;
+    status: StatusInfo;
+    reparation: PopupReparation | null;
+    entreprise: PopupEntreprise | null;
+    photos: PopupPhotos;
+}
+
 // Signalement complet depuis l'API
 export interface Report {
     id: number;
@@ -84,6 +122,7 @@ export interface Report {
     date_signalement: string;
     firebase_id?: string;
     est_synchronise?: boolean;
+    niveau?: number; // Niveau de dégradation 1-10 (peut être null si non défini)
     status: StatusInfo;
     signale_par: SignalePar | string; // Objet détaillé ou string simple selon l'endpoint
     reparation: Reparation | null;
@@ -124,6 +163,28 @@ export interface ReportUpdateData {
 export interface StatusUpdateData {
     id_status: number;
     commentaire?: string;
+    niveau?: number; // Optionnel - permet de mettre à jour le niveau en même temps
+}
+
+// Données pour mettre à jour uniquement le niveau de dégradation
+export interface NiveauUpdateData {
+    niveau: number; // 1-10
+}
+
+// Réponse de l'API pour la mise à jour du niveau
+export interface NiveauUpdateResponse {
+    success: boolean;
+    message: string;
+    signalement: {
+        id_signalement: number;
+        niveau: number;
+        ancien_niveau: number | null;
+    };
+    budget_recalcule?: {
+        id_reparation: number;
+        formule: string;
+        nouveau_budget: number;
+    };
 }
 
 // ============================================
@@ -244,6 +305,7 @@ export function mapApiToReport(apiSignalement: any): Report {
             date_signalement: new Date().toISOString(),
             firebase_id: undefined,
             est_synchronise: false,
+            niveau: undefined,
             status: { id: 1, libelle: 'Nouveau', couleur: '#gray' },
             signale_par: '',
             reparation: null,
@@ -275,6 +337,7 @@ export function mapApiToReport(apiSignalement: any): Report {
         date_signalement: apiSignalement.date_signalement || new Date().toISOString(),
         firebase_id: apiSignalement.firebase_id,
         est_synchronise: apiSignalement.est_synchronise ?? false,
+        niveau: apiSignalement.niveau ?? undefined, // Niveau de dégradation 1-10
         status: apiSignalement.status || { id: 1, libelle: 'Nouveau', couleur: '#gray' },
         signale_par: apiSignalement.signale_par || '',
         reparation: apiSignalement.reparation || null,

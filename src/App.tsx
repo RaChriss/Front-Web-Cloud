@@ -10,7 +10,11 @@ import {
   Sync,
   Reports,
   ReportDetail,
-  Entreprises
+  Entreprises,
+  PriceConfig,
+  Reparations,
+  ReparationDetail,
+  Statistics
 } from './pages';
 import { MainLayout } from './components/layout';
 import { AuthProvider, useAuth } from './contexts';
@@ -211,6 +215,46 @@ function AppRoutes() {
           <ManagerRoute>
             <MainLayout>
               <Entreprises />
+            </MainLayout>
+          </ManagerRoute>
+        }
+      />
+      <Route
+        path={ROUTES.ADMIN.PRICE_CONFIG}
+        element={
+          <ManagerRoute>
+            <MainLayout>
+              <PriceConfig />
+            </MainLayout>
+          </ManagerRoute>
+        }
+      />
+      <Route
+        path={ROUTES.ADMIN.REPARATIONS}
+        element={
+          <ManagerRoute>
+            <MainLayout>
+              <Reparations />
+            </MainLayout>
+          </ManagerRoute>
+        }
+      />
+      <Route
+        path={ROUTES.ADMIN.REPARATION_DETAIL}
+        element={
+          <ManagerRoute>
+            <MainLayout>
+              <ReparationDetail />
+            </MainLayout>
+          </ManagerRoute>
+        }
+      />
+      <Route
+        path={ROUTES.ADMIN.STATISTICS}
+        element={
+          <ManagerRoute>
+            <MainLayout>
+              <Statistics />
             </MainLayout>
           </ManagerRoute>
         }

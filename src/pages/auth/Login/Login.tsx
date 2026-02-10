@@ -34,8 +34,8 @@ export function Login() {
 
     const { values, errors, isSubmitting, handleChange, handleSubmit } = useForm<LoginCredentials>({
         initialValues: {
-            email: '',
-            password: '',
+            email: 'manager@gmail.com',
+            password: 'manager123',
         },
         validate: validateLogin,
         onSubmit: async (credentials) => {
