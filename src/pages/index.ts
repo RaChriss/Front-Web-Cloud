@@ -16,3 +16,6 @@ export { Sync } from './admin/Sync';
 export { BlockedUsers } from './admin/BlockedUsers';
 export { Users } from './admin/Users';
 export { Entreprises } from './admin/Entreprises';
+export { PriceConfig } from './admin/PriceConfig';
+export { Reparations, ReparationDetail } from './admin/Reparations';
+export { Statistics } from './admin/Statistics';

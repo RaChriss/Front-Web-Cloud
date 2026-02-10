@@ -3,3 +3,7 @@ export { authService } from './authService';
 export { adminService } from './adminService';
 export { reportService } from './reportService';
 export { syncService } from './syncService';
+export { priceService } from './priceService';
+export { photoService } from './photoService';
+export { reparationService } from './reparationService';
+export { statisticsService } from './statisticsService';

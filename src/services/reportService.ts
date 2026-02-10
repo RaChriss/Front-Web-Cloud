@@ -5,6 +5,8 @@ import type {
     ReportFormData,
     ReportUpdateData,
     StatusUpdateData,
+    NiveauUpdateData,
+    NiveauUpdateResponse,
     ReparationFormData,
     Reparation,
     HistoriqueEntry,
@@ -16,6 +18,7 @@ import type {
     GestionCompleteData,
     ManagerReportUpdateData,
     EntrepriseFormData,
+    PopupData,
 } from '../types/report.types';
 import { mapApiToReport } from '../types/report.types';
 
@@ -89,6 +92,11 @@ interface ApiMessageResponse {
     message: string;
 }
 
+interface ApiPopupResponse {
+    success: boolean;
+    data: PopupData;
+}
+
 export const reportService = {
     // ============================================
     // ROUTES PUBLIQUES (Visiteurs)
@@ -143,6 +151,14 @@ export const reportService = {
             method: 'GET',
         });
         return response.statuts;
+    },
+
+    // Données optimisées pour le popup d'un signalement
+    async getPopupData(signalementId: number): Promise<PopupData> {
+        const response = await apiRequest<ApiPopupResponse>(`/signalements/${signalementId}/popup`, {
+            method: 'GET',
+        });
+        return response.data;
     },
 
     // Liste des entreprises disponibles
@@ -265,6 +281,16 @@ export const reportService = {
             body: data,
         });
         return mapApiToReport(response.signalement);
+    },
+
+    // Modifier le niveau de dégradation d'un signalement (manager)
+    // Recalcule automatiquement le budget de la réparation si elle existe
+    async updateNiveau(id: number | string, data: NiveauUpdateData): Promise<NiveauUpdateResponse> {
+        const response = await apiRequest<NiveauUpdateResponse>(`/signalements/${id}/niveau`, {
+            method: 'PUT',
+            body: data,
+        });
+        return response;
     },
 
     // Assigner une entreprise responsable à un signalement

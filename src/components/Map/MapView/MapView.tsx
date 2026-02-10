@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
-import type { Report, ReportStatus } from '../../../types';
+import type { Report, ReportStatus, PopupData } from '../../../types';
+import { reportService } from '../../../services/reportService';
 import 'leaflet/dist/leaflet.css';
 import '../../../assets/styles/components/MapView.css';
 
@@ -114,6 +115,8 @@ export function MapView({
     pendingLocation,
 }: MapViewProps) {
     const [hoveredReportId, setHoveredReportId] = useState<number | null>(null);
+    const [popupData, setPopupData] = useState<Record<number, PopupData>>({});
+    const [loadingPopup, setLoadingPopup] = useState<number | null>(null);
 
     const formatDate = (date: Date | string) => {
         return new Date(date).toLocaleDateString('fr-FR', {
@@ -138,6 +141,41 @@ export function MapView({
     const handleMarkerMouseOut = useCallback(() => {
         setHoveredReportId(null);
     }, []);
+
+    // Charger les données du popup via l'API
+    const loadPopupData = useCallback(async (reportId: number) => {
+        if (popupData[reportId] || loadingPopup === reportId) return;
+
+        setLoadingPopup(reportId);
+        try {
+            const data = await reportService.getPopupData(reportId);
+            setPopupData(prev => ({ ...prev, [reportId]: data }));
+        } catch (error) {
+            console.error('Erreur lors du chargement des données popup:', error);
+        } finally {
+            setLoadingPopup(null);
+        }
+    }, [popupData, loadingPopup]);
+
+    // Obtenir le libellé du statut
+    const getStatusLabel = (libelle: string) => {
+        const labels: Record<string, string> = {
+            'nouveau': 'Nouveau',
+            'en_cours': 'En cours',
+            'termine': 'Terminé',
+        };
+        return labels[libelle] || libelle;
+    };
+
+    // Obtenir la classe CSS du statut
+    const getStatusClass = (libelle: string): ReportStatus => {
+        const mapping: Record<string, ReportStatus> = {
+            'nouveau': 'new',
+            'en_cours': 'in_progress',
+            'termine': 'completed',
+        };
+        return mapping[libelle] || 'new';
+    };
 
     return (
         <div className={`map-container ${isCreationMode ? 'creation-mode' : ''}`}>
@@ -194,6 +232,9 @@ export function MapView({
                     })
                     .map((report) => {
                         const isHovered = hoveredReportId === report.id;
+                        const currentPopupData = popupData[report.id];
+                        const isLoadingThisPopup = loadingPopup === report.id;
+
                         return (
                             <Marker
                                 key={report.id}
@@ -205,38 +246,127 @@ export function MapView({
                                     },
                                     mouseover: () => handleMarkerMouseOver(report.id),
                                     mouseout: handleMarkerMouseOut,
+                                    popupopen: () => loadPopupData(report.id),
                                 }}
                             >
                                 <Popup className="report-popup">
                                     <div className="popup-content">
-                                        <div className={`popup-status status-${report.clientStatus}`}>
-                                            {report.status?.libelle || statusLabels[report.clientStatus]}
-                                        </div>
-                                        <p className="popup-description">{report.description}</p>
-                                        <div className="popup-details">
-                                            <div className="popup-detail">
-                                                <span className="detail-label">Date:</span>
-                                                <span className="detail-value">{formatDate(report.createdAt)}</span>
+                                        {isLoadingThisPopup && !currentPopupData ? (
+                                            <div className="popup-loading">
+                                                <div className="popup-spinner"></div>
+                                                <span>Chargement...</span>
                                             </div>
-                                            {report.reparation?.surface_m2 && (
-                                                <div className="popup-detail">
-                                                    <span className="detail-label">Surface:</span>
-                                                    <span className="detail-value">{report.reparation.surface_m2} m²</span>
+                                        ) : currentPopupData ? (
+                                            <>
+                                                <div className="popup-header">
+                                                    <div className={`popup-status status-${getStatusClass(currentPopupData.status.libelle)}`}>
+                                                        {getStatusLabel(currentPopupData.status.libelle)}
+                                                    </div>
+                                                    {currentPopupData.reparation?.niveau && (
+                                                        <div className={`popup-niveau niveau-${currentPopupData.reparation.niveau <= 3 ? 'low' : currentPopupData.reparation.niveau <= 6 ? 'medium' : currentPopupData.reparation.niveau <= 8 ? 'high' : 'critical'}`}>
+                                                            Niveau {currentPopupData.reparation.niveau}
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            )}
-                                            {report.reparation?.budget && (
-                                                <div className="popup-detail">
-                                                    <span className="detail-label">Budget:</span>
-                                                    <span className="detail-value">{formatCurrency(report.reparation.budget)}</span>
+                                                <p className="popup-description">{currentPopupData.description}</p>
+
+                                                {/* Barre de progression */}
+                                                {currentPopupData.reparation && currentPopupData.reparation.avancement_pct > 0 && (
+                                                    <div className="popup-progress">
+                                                        <div className="progress-bar-container">
+                                                            <div
+                                                                className="progress-bar"
+                                                                style={{ width: `${currentPopupData.reparation.avancement_pct}%` }}
+                                                            ></div>
+                                                        </div>
+                                                        <span className="progress-label">{currentPopupData.reparation.avancement_pct}% complété</span>
+                                                    </div>
+                                                )}
+
+                                                <div className="popup-details">
+                                                    <div className="popup-detail">
+                                                        <span className="detail-label">📅 Date:</span>
+                                                        <span className="detail-value">{formatDate(currentPopupData.date_signalement)}</span>
+                                                    </div>
+                                                    {currentPopupData.reparation?.surface_m2 && (
+                                                        <div className="popup-detail">
+                                                            <span className="detail-label">📐 Surface:</span>
+                                                            <span className="detail-value">{currentPopupData.reparation.surface_m2} m²</span>
+                                                        </div>
+                                                    )}
+                                                    {currentPopupData.reparation?.budget && (
+                                                        <div className="popup-detail">
+                                                            <span className="detail-label">💰 Budget:</span>
+                                                            <span className="detail-value budget-value">{formatCurrency(currentPopupData.reparation.budget)}</span>
+                                                        </div>
+                                                    )}
+                                                    {currentPopupData.entreprise && (
+                                                        <div className="popup-detail entreprise-detail">
+                                                            <span className="detail-label">🏢 Entreprise:</span>
+                                                            <div className="entreprise-info">
+                                                                <span className="detail-value">{currentPopupData.entreprise.nom}</span>
+                                                                {currentPopupData.entreprise.telephone && (
+                                                                    <a href={`tel:${currentPopupData.entreprise.telephone}`} className="entreprise-contact">
+                                                                        📞 {currentPopupData.entreprise.telephone}
+                                                                    </a>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            )}
-                                            {report.reparation?.entreprise_nom && (
-                                                <div className="popup-detail">
-                                                    <span className="detail-label">Entreprise:</span>
-                                                    <span className="detail-value">{report.reparation.entreprise_nom}</span>
+
+                                                <div className="popup-actions">
+                                                    {currentPopupData.photos.count > 0 ? (
+                                                        <button
+                                                            className="popup-action-btn photos-btn"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                onReportClick?.(report);
+                                                            }}
+                                                        >
+                                                            📷 Voir les photos ({currentPopupData.photos.count})
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            className="popup-action-btn details-btn"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                onReportClick?.(report);
+                                                            }}
+                                                        >
+                                                            🔍 Voir les détails
+                                                        </button>
+                                                    )}
                                                 </div>
-                                            )}
-                                        </div>
+                                            </>
+                                        ) : (
+                                            // Fallback: utiliser les données du report
+                                            <>
+                                                <div className="popup-header">
+                                                    <div className={`popup-status status-${report.clientStatus}`}>
+                                                        {report.status?.libelle || statusLabels[report.clientStatus]}
+                                                    </div>
+                                                </div>
+                                                <p className="popup-description">{report.description}</p>
+                                                <div className="popup-details">
+                                                    <div className="popup-detail">
+                                                        <span className="detail-label">📅 Date:</span>
+                                                        <span className="detail-value">{formatDate(report.createdAt)}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="popup-actions">
+                                                    <button
+                                                        className="popup-action-btn details-btn"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            onReportClick?.(report);
+                                                        }}
+                                                    >
+                                                        🔍 Voir les détails
+                                                    </button>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 </Popup>
                             </Marker>

@@ -21,6 +21,10 @@ export const ROUTES = {
         USERS: '/admin/users',
         BLOCKED_USERS: '/admin/users/blocked',
         ENTREPRISES: '/admin/entreprises',
+        PRICE_CONFIG: '/admin/config/prix',
+        REPARATIONS: '/admin/reparations',
+        REPARATION_DETAIL: '/admin/reparations/:id',
+        STATISTICS: '/admin/statistiques',
     },
 
     // Anciens chemins (compatibilité)
